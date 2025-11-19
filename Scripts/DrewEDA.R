@@ -11,24 +11,41 @@ tiltXText <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1
 #can certain regions and/or countries be priority targets?
 
 #Indicator 4.1.1 is pro. of kids in year 2/3, end of primary, end of lower sec
-DataInd <- Data %>% filter(Indicator == "4.1.1")
-
-DataInd1 <- DataInd %>% group_by(`sub-region`, `Education level`) %>% summarise(quar = quantile(Value,0.25))
+DataInd <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT")
 
 DataInd %>% ggplot(aes(`sub-region`, Value))+
   geom_boxplot()+
   facet_wrap(~`Education level`)+
-  gghighlight(quantile(Value,0.25)<50, calculate_per_facet = T)+
+  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
   tiltXText
+
+plotQuantileValue <- function(quant=0.5,value=50, df = DataInd){
+  df %>% ggplot(aes(`sub-region`, Value))+
+    geom_boxplot()+
+    facet_wrap(~`Education level`)+
+    gghighlight(quantile(Value,quant)<value, calculate_per_facet = T)+
+    tiltXText
+}
+
+DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT")
+
+DataComp %>% ggplot(aes(region, Value))+
+    geom_boxplot()+
+    facet_wrap(~`Education level`)+
+    gghighlight(quantile(Value,0.25)<50, calculate_per_facet = T)+
+    tiltXText
+
+DataFurtherComp <- DataComp %>% 
+  group_by(`Education level`, region) %>% 
+  filter(quantile(Value,0.25)<50) %>% 
+  ungroup() %>%
+  filter(!is.na(Value))
   
 
-
-DataPer <- Data %>% filter(Units == "PERCENT")
-DataRatio <- Data %>% filter(Units == "Ratio")
-DataPer %>% ggplot(aes(`sub-region`, Value))+
+DataFurtherComp %>% ggplot(aes(region,Value))+
   geom_boxplot()+
+  facet_wrap(~`Education level`)+
   tiltXText
-
 
 #Question 3
 
