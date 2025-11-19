@@ -10,6 +10,10 @@ chars_to_factors_except <- function(df, iDontLike) {
   df %>% mutate(across(!all_of(iDontLike),as.factor))
 }
 
+changeToFactor <- function(df, cols){
+  df %>% mutate(across(all_of(cols),as.factor))
+}
+
 changeToNumber <- function(df, cols){
   df %>% mutate(across(all_of(cols),as.numeric))
 }
@@ -34,3 +38,8 @@ Data[which(Data$GeoAreaName=="Kosovo"),18] <- "Southern Europe"
 Data[which(Data$GeoAreaName=="Australia and New Zealand"),17] <- "Oceania"
 Data[which(Data$GeoAreaName=="Australia and New Zealand"),18] <- "Australia and New Zealand"
 Data[which(Data$GeoAreaName=="Oceania (exc. Australia and New Zealand)"),17] <- "Oceania"
+
+#factorise data
+Data <- changeToFactor(Data, c("name", "region", "sub-region"))
+
+save(Data, file = "Data/cleanedData.RData")
