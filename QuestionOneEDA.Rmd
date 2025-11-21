@@ -10,8 +10,10 @@ nocite: '@*'
 knitr::opts_chunk$set(echo = F)
 
 #import Libraries and Data
-library(tidyverse)
-load("cleanedData.RData")
+require(tidyverse)
+require(gghighlight)
+require(knitr)
+load("Data/cleanedData.RData")
 labs <- setdiff(knitr::all_labels(), "setup")
 ```
 
@@ -53,10 +55,16 @@ DataProSex %>% ggplot(aes(`sub-region`, Value))+
 Now, what is most concerning is when looking at Latin America and the Caribbean and Northern Africa. Both of these sub-regions in both plots demonstrate a general pattern that the percentage of the entire population -- or just about -- has not achieved 75% proficiency. 
 
 ```{r LA.NA.Table}
+#table
+tab <- DataPro %>% 
+  arrange(Value) %>%
+  select(GeoAreaName, `sub-region`, TimePeriod, Value, `Education level`, `Type of skill`) %>%
+  slice_head(n=10)
 
+kable(tab)
 ```
 
-
+These countries display the worst percentages of their population, this aligns well with the plot.
 
 # References
 

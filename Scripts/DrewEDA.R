@@ -32,10 +32,12 @@ DataProSex %>% ggplot(aes(`sub-region`, Value))+
   gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
   tiltXText
 
-DataPro %>% ##NOT ARRAGING RIGHT.
-  arrange(desc(Value)) %>%
-  slice_tail(n=10) %>%
-  select(GeoAreaName, TimePeriod, Value, `Education level`, `Type of skill`)
+#overall table
+DataPro %>% 
+  arrange(Value) %>%
+  select(GeoAreaName, `sub-region`, TimePeriod, Value, `Education level`, `Type of skill`) %>%
+  slice_head(n=10)
+  
 
 
 
