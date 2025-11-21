@@ -11,44 +11,71 @@ tiltXText <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1
 #can certain regions and/or countries be priority targets?
 
 #Indicator 4.1.1 is pro. of kids in year 2/3, end of primary, end of lower sec
-DataInd <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT")
 
-DataInd %>% ggplot(aes(`sub-region`, Value))+
+#filter data
+DataPro <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex == "BOTHSEX", `sub-region` != "NA")
+
+#plot filtered data
+DataPro %>% ggplot(aes(`sub-region`, Value))+
   geom_boxplot()+
   facet_wrap(~`Education level`)+
   gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
   tiltXText
 
-plotQuantileValue <- function(quant=0.5,value=50, df = DataInd){
-  df %>% ggplot(aes(`sub-region`, Value))+
-    geom_boxplot()+
-    facet_wrap(~`Education level`)+
-    gghighlight(quantile(Value,quant)<value, calculate_per_facet = T)+
-    tiltXText
-}
+#filter data
+DataProSex <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex != "BOTHSEX", `sub-region` != "NA")
 
+#plot filtered data
+DataProSex %>% ggplot(aes(`sub-region`, Value))+
+  geom_boxplot()+
+  facet_grid(Sex~`Education level`)+
+  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
+  tiltXText
+
+DataPro %>% ##NOT ARRAGING RIGHT.
+  arrange(desc(Value)) %>%
+  slice_tail(n=10) %>%
+  select(GeoAreaName, TimePeriod, Value, `Education level`, `Type of skill`)
+
+
+
+#############
 DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT")
 
 DataComp %>% ggplot(aes(region, Value))+
     geom_boxplot()+
     facet_wrap(~`Education level`)+
-    gghighlight(quantile(Value,0.25)<50, calculate_per_facet = T)+
+    gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
     tiltXText
 
+
+##look at quantile plot
 DataFurtherComp <- DataComp %>% 
   group_by(`Education level`, region) %>% 
-  filter(quantile(Value,0.25)<50) %>% 
-  ungroup() %>%
-  filter(!is.na(Value))
-  
+  filter(quantile(Value,0.5)<75) %>% 
+  arrange(Value) %>%
+  filter(Sex == "BOTHSEX") %>%
+  ungroup()
+levels(DataFurtherComp$Quantile)[1] <- "Total"
 
-DataFurtherComp %>% ggplot(aes(region,Value))+
+#graph
+DataFurtherComp %>% filter(!is.na(region)) %>% ggplot(aes(region,Value))+
   geom_boxplot()+
-  facet_wrap(~`Education level`)+
+  facet_grid(`Education level` ~ Quantile)+
+  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
   tiltXText
+
+#table
+DataFurtherComp %>% 
+  slice_head(n=10)%>%
+  select(name, region, `Education level`, Value, TimePeriod)
+
+
 
 #Question 3
 
 # key disparities in edu access e.g. gender, age, poverty
 nrow(data[!is.na(data$`Education level`),])
 unique(data$`Education level`)
+
+

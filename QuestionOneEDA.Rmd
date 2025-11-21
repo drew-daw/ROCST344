@@ -1,11 +1,69 @@
 ---
 title: "Question 1 EDA"
 author: "Andrew Dawson"
-date: "`r Sys.Date()`"
 output: pdf_document
+bibliography: ref.bib
+nocite: '@*'
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F)
+
+#import Libraries and Data
+library(tidyverse)
+load("cleanedData.RData")
+labs <- setdiff(knitr::all_labels(), "setup")
+```
+
+
+## EDA and Analysis of 4.1.1
+
+```{r lookGeneral}
+#for future plots
+tiltXText <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+#filter data
+DataPro <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex == "BOTHSEX", `sub-region` != "NA")
+
+#plot filtered data
+DataPro %>% ggplot(aes(`sub-region`, Value))+
+  geom_boxplot()+
+  facet_wrap(~`Education level`)+
+  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
+  tiltXText
+```
+
+Within the box plots, the highlighted box plots show within the differing sub-regions' median of population, which percentage of the population have not achieved minimum proficiency in reading and mathematics. This demonstrates the sub-regions capability of providing education access as the lower the percentage of the population with the minimum proficiency of the two vital skills, the lower the access is. 
+
+
+Comparing this with the two sexes also shows different patterns. 
+
+```{r lookSex}
+#filter data
+DataProSex <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex != "BOTHSEX", `sub-region` != "NA")
+
+#plot filtered data
+DataProSex %>% ggplot(aes(`sub-region`, Value))+
+  geom_boxplot()+
+  facet_grid(Sex~`Education level`)+
+  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
+  tiltXText
+```
+
+Now, what is most concerning is when looking at Latin America and the Caribbean and Northern Africa. Both of these sub-regions in both plots demonstrate a general pattern that the percentage of the entire population -- or just about -- has not achieved 75% proficiency. 
+
+```{r LA.NA.Table}
+
+```
+
+
+
+# References
+
+<div id="refs"></div>
+
+# Appendix
+
+```{r, ref.label=labs, echo=T, eval=F}
 ```
 

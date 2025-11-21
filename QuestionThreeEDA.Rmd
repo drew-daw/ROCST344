@@ -1,8 +1,9 @@
 ---
 title: "Question 3 EDA"
 author: "Andrew Dawson"
-date: "`r Sys.Date()`"
 output: pdf_document
+bibliography: ref.bib
+nocite: '@*'
 ---
 
 ```{r setup, include=FALSE}
