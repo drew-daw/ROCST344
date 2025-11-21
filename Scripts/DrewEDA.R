@@ -1,6 +1,6 @@
 #import data and packages
 library(tidyverse)
-load("cleanedData.RData")
+load("Data/cleanedData.RData")
 
 #universal variables
 tiltXText <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
@@ -42,14 +42,30 @@ DataPro %>%
 
 
 #############
+
+
+#table
+DataFurtherComp %>% 
+  slice_head(n=10)%>%
+  select(name, region, `Education level`, Value, TimePeriod)
+
+
+
+#Question 3
+
+# key disparities in edu access e.g. gender, age, poverty
+
+#brief data clean and filter
+#DataDisp <- Data %>% filter(Indicator == "4.5.1", !(FootNote %in% c("This data point is NIL for the submitting nation.", "This data point is NOT APPLICABLE for the submitting nation.")))
+
+DataPro %>% ggplot(aes(`Education level`,Value))+
+  geom_boxplot()+
+  facet_wrap(~`Type of skill`)+
+  gghighlight(quantile(Value, .5) < 75, calculate_per_facet = T)
+
+
+#new goal! completion rate
 DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT")
-
-DataComp %>% ggplot(aes(region, Value))+
-    geom_boxplot()+
-    facet_wrap(~`Education level`)+
-    gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
-    tiltXText
-
 
 ##look at quantile plot
 DataFurtherComp <- DataComp %>% 
@@ -67,17 +83,5 @@ DataFurtherComp %>% filter(!is.na(region)) %>% ggplot(aes(region,Value))+
   gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
   tiltXText
 
-#table
-DataFurtherComp %>% 
-  slice_head(n=10)%>%
-  select(name, region, `Education level`, Value, TimePeriod)
-
-
-
-#Question 3
-
-# key disparities in edu access e.g. gender, age, poverty
-nrow(data[!is.na(data$`Education level`),])
-unique(data$`Education level`)
-
-
+DataComp %>% ggplot(aes())+
+  

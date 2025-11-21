@@ -10,3 +10,18 @@ nocite: '@*'
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Comparing this with the two sexes also shows different patterns. 
+
+```{r lookSex}
+#filter data
+DataProSex <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex != "BOTHSEX", `sub-region` != "NA")
+
+#plot filtered data
+DataProSex %>% ggplot(aes(`sub-region`, Value))+
+  geom_boxplot()+
+  facet_grid(Sex~`Education level`)+
+  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
+  tiltXText
+```
+
+Now, what is most concerning is when looking at Latin America and the Caribbean and Northern Africa. Both of these sub-regions in both plots demonstrate a general pattern that the percentage of the entire population -- or just about -- has not achieved 75% proficiency. 
