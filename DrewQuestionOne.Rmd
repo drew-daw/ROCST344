@@ -1,0 +1,114 @@
+---
+title: "Question 1 EDA"
+author: "Andrew Dawson"
+output: pdf_document
+bibliography: ref.bib
+nocite: '@*'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+
+#import Libraries and Data
+require(tidyverse)
+require(gghighlight)
+require(knitr)
+load("Data/cleanedData.RData")
+labs <- setdiff(knitr::all_labels(), "setup")
+```
+
+
+# EDA and Analysis of 4.1.1
+
+## Comparing Sub-Regions
+```{r lookGeneral, message=F}
+#for future plots
+tiltXText <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+#filter data
+DataPro <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex == "BOTHSEX", `sub-region` != "NA")
+
+#set up data for plot
+lines <- DataPro %>% group_by(`Education level`) %>% summarise(grandMean = mean(Value))
+points <- DataPro %>% group_by(`sub-region`, `Education level`) %>% summarise(mean = mean(Value))
+
+#merge for highlighted plot
+DataPro <- left_join(DataPro, lines, by = "Education level")
+
+#plot filtered data
+DataPro %>% ggplot(aes(`sub-region`, Value))+
+  geom_boxplot()+
+  facet_wrap(~`Education level`, labeller = labeller(`Education level` = c("LOWSEC" = "Lower Secondary", "PRIMAR" = "Primary")))+
+  gghighlight(mean(Value) < mean(grandMean), calculate_per_facet = T)+
+  tiltXText+
+  geom_hline(aes(yintercept = grandMean), lty = 2, colour = "red", data=lines)+
+  geom_point(data = points, aes(y=mean), pch = 4, colour="red")+
+  labs(x = "Sub-Region", y = "Percentage of Children Achiving Minimum Proficiency", title = "Proportion of Children in Primary and Lower Secondary Schools per Sub-Region")
+```
+<!-- results of the plot -->
+
+Within the box plots, the highlighted box plots show each Sub Region's mean being less than the mean for the overall Education Level -- for clarity the red crosses are the means for each Sub Region, whilst the black points are the outliers. 
+Within the Lower Secondary section, only one Sub-Region displays an outlier, being Northern Africa. Interestingly, this outlier is still below the grand mean of the section, displaying that Northern Africa is an area of concern. Additionally, South-east Asia is the only Sub-Region where the mean falls below the grand mean, but the third quartile is higher. This shows much more spread across the Sub-Region. 
+Within the Primary section, outlier are shown in Latin America and the Caribbean, Northern Africa, and Sub-Saharan Africa. Additonally, South-east Asia shows an incredible spread of data, with the IQR being `r round(IQR((DataPro %>% filter("sub-region" == "South-eastern Asia"))$Value),2)`.
+
+
+<!-- Discussion/Critical Evaluation) -->
+
+Whilst the Lower Secondary grand mean, being `r round(lines$grandMean[1],2)`, is higher than the Primary's grand mean, being `r round(lines$grandMean[2],2)`, it is important to consider the two means are not independent of another. In other words, in order to get into secondary school one must pass primary, thus the grand mean of the Primary schools would affect the mean of the Lower Secondary schools. 
+
+South-east Asia also demonstrates the most spread across the sub-regions. Contextually, this aligns with the general developmental growth of the region. For instance, the education within Singapore is usually shown as the world's best standard for education, whilst a nation like Laos or Thailand, lacks behind, which all three countries are within the same sub-region.  <!-- find source to back up -->
+
+## Highlighting a Concerning Sub-Region
+
+Northern Africa is one of the sub-regions that shown a lot of concern when looking at the proportion of children achieving minimum proficiency. As highlighted before, the most extreme part of the ranges for both Primary and Secondary education does not reach the Grand Mean. 
+
+```{r northAfrica, message=F}
+#filter just for N Afr
+DataAfr <- DataPro %>% filter(`sub-region` == "Northern Africa")
+points2 <- DataAfr %>% group_by(GeoAreaName, `Education level`) %>% summarise(mean = mean(Value)) 
+
+#plot
+DataAfr %>% ggplot(aes(GeoAreaName, Value))+
+  geom_boxplot()+
+  facet_wrap(~`Education level`, labeller = labeller(`Education level` = c("LOWSEC" = "Lower Secondary", "PRIMAR" = "Primary")))+
+  geom_hline(aes(yintercept = grandMean), lty=2,colour="red",data=lines)+
+  geom_hline(aes(yintercept = mean), lty=3, colour="blue", data=points[points$`sub-region` == "Northern Africa",])+
+  geom_point(data = points2, aes(y=mean), pch = 4, colour="red")+
+  labs(x = "Country", y="Percentage of Children Achiving Minimum Proficiency", title = "Proportion of Children in Primary and Lower Secondary Schools per Country in Northern Africa")
+```
+
+<!-- results of the plot -->
+
+Similar to the first plot, the red line indicates the grand mean of the world per education level; however, the blue line indicates the grand mean of the sub-region, Northern Africa. No country's was able to achieve the grand mean within either education level. In addition, certain bits of data were missing for the Primary section, being Algeria and Egypt.   
+
+<!-- Discussion/Critical Evaluation -->
+
+
+
+## Table (Not Sure)
+```{r LA.NA.Table}
+#table
+tab <- DataPro %>% 
+  arrange(Value) %>%
+  select(GeoAreaName, `sub-region`, TimePeriod, Value, `Education level`, `Type of skill`) %>%
+  slice_head(n=10)
+
+kable(tab)
+```
+
+
+## Recomendation
+<!-- overall recommendations -->
+
+For Sub-Regions which have it's maximum underneath the grand mean, more allocation of resources is needed there, whilst for Sub-Regions where its maximum does go above the grand mean but the Sub-Regions' mean is below the grand mean, further analysis per Sub-Region is needed to ensure proper allocation of resources, i.e. the Singaporean example within South-east Asia. 
+
+
+# References
+
+<div id="refs"></div>
+
+# Appendix
+
+```{r, ref.label=labs, echo=T, eval=F}
+```
+

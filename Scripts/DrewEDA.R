@@ -1,5 +1,6 @@
 #import data and packages
 library(tidyverse)
+library(gghighlight)
 load("Data/cleanedData.RData")
 
 #universal variables
@@ -14,13 +15,31 @@ tiltXText <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1
 
 #filter data
 DataPro <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex == "BOTHSEX", `sub-region` != "NA")
+lines <- DataPro %>% group_by(`Education level`) %>% summarise(grandMean = mean(Value))
+points <- DataPro %>% group_by(`sub-region`, `Education level`) %>% summarise(mean = mean(Value))
+
+#merge for the boxplot graph
+DataPro <- left_join(DataPro, lines, by = "Education level")
 
 #plot filtered data
 DataPro %>% ggplot(aes(`sub-region`, Value))+
   geom_boxplot()+
   facet_wrap(~`Education level`)+
-  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
-  tiltXText
+  gghighlight(mean(Value) < mean(grandMean), calculate_per_facet = T)+
+  tiltXText+
+  geom_hline(aes(yintercept = grandMean), lty = 2, colour = "red", data=lines)+
+  geom_point(data = points, aes(y=mean), pch = 4, colour="red")
+
+## look at northern africa
+DataAfr <- DataPro %>% filter(`sub-region` == "Northern Africa")
+
+DataAfr %>% ggplot(aes(GeoAreaName, Value))+
+  geom_boxplot()+
+  facet_wrap(~`Education level`)+
+  geom_hline(aes(yintercept = grandMean), lty=2,colour="red",data=lines)
+
+
+
 
 #filter data
 DataProSex <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex != "BOTHSEX", `sub-region` != "NA")
@@ -83,5 +102,35 @@ DataFurtherComp %>% filter(!is.na(region)) %>% ggplot(aes(region,Value))+
   gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
   tiltXText
 
-DataComp %>% ggplot(aes())+
+DataComp %>% ggplot(aes(Quantile, Value))+
+  geom_boxplot()+
+  gghighlight(quantile(Value,0.5)<75)
   
+#temporal trend?
+
+DataSexTrend <- Data %>%
+  filter(Indicator == "4.1.2",
+         Sex != "BOTHSEX") %>%
+  group_by(Sex, TimePeriod) %>%
+  summarise(
+    grandMedian = median(Value, na.rm = TRUE),
+    .groups = "drop")
+
+DataSexTrend %>% ggplot(aes(TimePeriod, grandMedian, colour = Sex))+
+  geom_line()+
+  geom_point()+
+  scale_x_continuous(breaks=seq(2010, 2019, by=2))
+
+
+DataQuanTrend <- DataComp %>%
+  group_by(Quantile, TimePeriod) %>%
+  summarise(
+    grandMedian = median(Value),
+    grandMean = mean(Value),
+    .groups = "drop")
+
+DataQuanTrend %>% ggplot(aes(TimePeriod, grandMedian, colour = Quantile))+
+  geom_line()+
+  geom_point()+
+  scale_x_continuous(breaks=seq(2010,2019,by=2))+
+  gghighlight(median(grandMedian)<75, use_direct_label = F)
