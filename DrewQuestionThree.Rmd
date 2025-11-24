@@ -7,21 +7,125 @@ nocite: '@*'
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F, message = F)
+
+#import Libraries and Data
+require(tidyverse)
+require(gghighlight)
+require(knitr)
+load("Data/cleanedData.RData")
+labs <- setdiff(knitr::all_labels(), "setup")
 ```
+
+
+# Comparing Disparities in Educational Access
+
+## Sex
 
 Comparing this with the two sexes also shows different patterns. 
 
 ```{r lookSex}
+#for future plots
+tiltXText <- theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
 #filter data
 DataProSex <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex != "BOTHSEX", `sub-region` != "NA")
+lines <- DataProSex %>% group_by(`Education level`, Sex) %>% summarise(grandMean = mean(Value))
+points <- DataProSex %>% group_by(`sub-region`, `Education level`, Sex) %>% summarise(mean = mean(Value))
+
+#join for highlight
+DataProSex <- left_join(DataProSex, lines, by = c("Education level" = "Education level", "Sex" = "Sex"))
 
 #plot filtered data
 DataProSex %>% ggplot(aes(`sub-region`, Value))+
   geom_boxplot()+
-  facet_grid(Sex~`Education level`)+
-  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
-  tiltXText
+  facet_grid(Sex~`Education level`, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
+  gghighlight(mean(Value) < mean(grandMean), calculate_per_facet = T)+
+  geom_hline(aes(yintercept = grandMean), lty=2,colour="red",data=lines)+
+  geom_point(aes(y=mean), data=points, pch=4,colour="red")+
+  tiltXText+
+  labs(x = "Sub-Region", y = "Percentage of Children Achiving Min Pro", title = "Comparing Sex with Min Pro in Education")
 ```
 
-Now, what is most concerning is when looking at Latin America and the Caribbean and Northern Africa. Both of these sub-regions in both plots demonstrate a general pattern that the percentage of the entire population -- or just about -- has not achieved 75% proficiency. 
+<!-- results of the plot -->
+Within the box plots, the highlighted box plots show each Sub Region's mean being less than the mean for the overall Education Level -- for clarity the red crosses are the means for each Sub Region, whilst the black points are the outliers.
+Interestingly, both sexes have an equal number of Sub-Regions whereby the Sub-Regions mean is less than the grand mean of the section. In addition, the primary section has less sub-regions where the mean is less than the grand mean; in other words, Central Asia has a greater mean than the grand mean in Primary Education whilst it has a smaller mean in Secondary for both sexes. 
+
+
+<!-- Discussion/Critical Evaluation -->
+
+The IQR for the sexes differ. The IQR for males seems to be less than females. <!-- find a source which talks about this --> 
+
+
+## Wage 
+
+```{r lookWage}
+#new indicator!!!! completion rate
+DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT", `Education level` == c("LOWSEC", "PRIMAR"), !is.na(region))
+levels(DataComp$Quantile)[1] <- "Total"
+linesWage <- DataComp %>% group_by(`Education level`, Quantile) %>% summarise(grandMean = mean(Value))
+pointsWage <- DataComp %>% group_by(`Education level`, Quantile, region) %>% summarise(mean = mean(Value))
+
+#join for highlight
+DataComp <- left_join(DataComp, linesWage, by = c("Education level" = "Education level", "Quantile" = "Quantile"))
+
+#graph
+DataComp %>% ggplot(aes(region,Value))+
+  geom_boxplot()+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
+  gghighlight(mean(Value)<mean(grandMean), calculate_per_facet = T)+
+  geom_hline(aes(yintercept = grandMean), lty = 2, colour = "red")+
+  geom_point(aes(y=mean), pch = 4, colour="red",data=pointsWage)+
+  tiltXText+
+  labs(x = "Region", y="Percentage of Children Achiving Min Pro", title = "Comparing Wealth with Completion Rate")
+```
+
+<!-- results of the plot -->
+
+Within this plot, the general regions are compared with wealth quantiles, i.e. Q1 indicates the poorest of the population, and Q5 the wealthiest. 
+
+<!-- Discussion/Critical Evaluation -->
+
+The mean completion rate per region seems to almost have more wealthy people lack behind. I don't think this is a fair comparision so adjustment of the graph is needed.
+
+Take this plot with a grain of salt, for example look at Europe for Q5. IQR is the entire range, and the median is 100 yet the mean is less than the grandmean. 
+
+```{r lookWealthpt2}
+#look at the grandMean for education level ONLY
+linesWage <- DataComp %>% group_by(`Education level`) %>% summarise(grandMeanEdu = mean(Value))
+
+#join for plot
+DataComp <- left_join(DataComp, linesWage, by="Education level")
+
+#graph
+DataComp %>% ggplot(aes(region,Value))+
+  geom_boxplot()+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
+  gghighlight(mean(Value)<mean(grandMeanEdu), calculate_per_facet = T)+
+  geom_hline(aes(yintercept = grandMeanEdu), lty = 3, colour = "blue")+
+  geom_point(aes(y=mean), pch = 4, colour="red",data=pointsWage)+
+  tiltXText+
+  labs(x = "Region", y="Percentage of Children Achiving Min Pro", title = "Comparing Wealth with Completion Rate")
+```
+
+This plot better highlights the wealth disparity, as it highlights the poorer countries to have more issues in educational completion rate, which is known to be historically proven <!-- find another source -->
+
+## Table?
+
+i don't really have one for this question.
+
+## Recommendation
+
+Sexes may not exactly demonstrate a need to differentiate, however there may be bias within the data. 
+
+Wealth shows that less fortunate families may need further support. 
+
+
+# References
+
+<div id="refs"></div>
+
+# Appendix
+
+```{r, ref.label=labs, echo=T, eval=F}
+```

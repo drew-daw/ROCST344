@@ -43,12 +43,19 @@ DataAfr %>% ggplot(aes(GeoAreaName, Value))+
 
 #filter data
 DataProSex <- Data %>% filter(Indicator == "4.1.1", Units == "PERCENT", Sex != "BOTHSEX", `sub-region` != "NA")
+lines <- DataProSex %>% group_by(`Education level`, Sex) %>% summarise(grandMean = mean(Value))
+points <- DataProSex %>% group_by(`sub-region`, `Education level`, Sex) %>% summarise(mean = mean(Value))
+
+#join for highlight
+DataProSex <- left_join(DataProSex, lines, by = c("Education level" = "Education level", "Sex" = "Sex"))
 
 #plot filtered data
 DataProSex %>% ggplot(aes(`sub-region`, Value))+
   geom_boxplot()+
   facet_grid(Sex~`Education level`)+
-  gghighlight(quantile(Value,0.5)<75, calculate_per_facet = T)+
+  gghighlight(mean(Value) < mean(grandMean), calculate_per_facet = T)+
+  geom_hline(aes(yintercept = grandMean), lty=2,colour="red",data=lines)+
+  geom_point(aes(y=mean), data=points, pch=4,colour="red")+
   tiltXText
 
 #overall table
