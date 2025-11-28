@@ -1,0 +1,92 @@
+---
+title: "Question 3 EDA"
+author: "Andrew Dawson"
+output: pdf_document
+bibliography: ref.bib
+nocite: '@*'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F)
+
+#import Libraries and Data
+require(tidyverse)
+require(gghighlight)
+require(knitr)
+load("Data/cleanedData.RData")
+labs <- setdiff(knitr::all_labels(), "setup")
+```
+
+
+# Comparing Disparities in Educational Access
+
+## Wage 
+
+```{r lookWage}
+## lets make a bar plot
+#make the lines and means
+DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT")
+linesWage <- DataComp %>% 
+  group_by(`Education level`, Quantile) %>% 
+  summarise(quantileMean = mean(Value))
+linesWage2 <- DataComp %>%
+  group_by(`Education level`) %>%
+  summarise(eduMean = mean(Value))
+pointsWage <- DataComp %>% 
+  group_by(`Education level`, Quantile, region) %>% 
+  summarise(regionalMean = mean(Value)) %>% 
+  left_join(linesWage, by = c("Education level" = "Education level", "Quantile" = "Quantile")) %>%
+  left_join(linesWage2, by = c("Education level" = "Education level"))
+
+#plot the data
+pointsWage %>% ggplot(aes(region, regionalMean, fill = region))+
+  geom_col()+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
+  gghighlight(regionalMean < quantileMean, calculate_per_facet = T)+
+  #geom_hline(aes(yintercept = eduMean), lty = 3, colour="blue")+
+  geom_hline(aes(yintercept = quantileMean), lty=2, colour="red")+
+  theme(legend.position = "none")+
+  tiltXText+
+  labs(x = "Region", y="Rate of Completion", title = "Comparing Wealth with Completion Rate")
+```
+
+<!-- results of the plot -->
+
+Within this plot, the general regions are compared with wealth quantiles, i.e. Q1 indicates the poorest of the population, and Q5 the wealthiest. 
+
+<!-- Discussion/Critical Evaluation -->
+
+The mean completion rate per region seems to almost have more wealthy people lack behind. I don't think this is a fair comparision so adjustment of the graph is needed.
+
+Take this plot with a grain of salt, for example look at Europe for Q5. IQR is the entire range, and the median is 100 yet the mean is less than the grandmean. 
+
+```{r lookWealthpt2}
+#plot the data
+pointsWage %>% ggplot(aes(region, regionalMean, fill = region))+
+  geom_col()+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
+  gghighlight(regionalMean < eduMean, calculate_per_facet = T)+
+  geom_hline(aes(yintercept = eduMean), lty = 3, colour="blue")+
+  #geom_hline(aes(yintercept = quantileMean), lty=2, colour="red")+
+  theme(legend.position = "none")+
+  tiltXText+
+  labs(x = "Region", y="Percentage of Children Achiving Min Pro", title = "Comparing Wealth with Completion Rate")
+```
+
+This plot better highlights the wealth disparity, as it highlights the poorer countries to have more issues in educational completion rate, which is known to be historically proven <!-- find another source -->
+
+## Recommendation
+
+Sexes may not exactly demonstrate a need to differentiate, however there may be bias within the data. 
+
+Wealth shows that less fortunate families may need further support. 
+
+
+# References
+
+<div id="refs"></div>
+
+# Appendix
+
+```{r, ref.label=labs, echo=T, eval=F}
+```

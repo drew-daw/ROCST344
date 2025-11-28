@@ -1,0 +1,13 @@
+---
+title: "Data"
+author: "Andrew Dawson"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<!-- How did we go about the data and the code around that? -->
+

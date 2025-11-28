@@ -141,3 +141,78 @@ DataQuanTrend %>% ggplot(aes(TimePeriod, grandMedian, colour = Quantile))+
   geom_point()+
   scale_x_continuous(breaks=seq(2010,2019,by=2))+
   gghighlight(median(grandMedian)<75, use_direct_label = F)
+
+
+
+## lets make a bar plot
+linesWage <- DataComp %>% 
+  group_by(`Education level`, Quantile) %>% 
+  summarise(quantileMean = mean(Value))
+
+linesWage2 <- DataComp %>%
+  group_by(`Education level`) %>%
+  summarise(eduMean = mean(Value))
+
+pointsWage <- DataComp %>% 
+  group_by(`Education level`, Quantile, region) %>% 
+  summarise(regionalMean = mean(Value)) %>% 
+  left_join(linesWage, by = c("Education level" = "Education level", "Quantile" = "Quantile")) %>%
+  left_join(linesWage2, by = c("Education level" = "Education level"))
+
+pointsWage <- pointsWage %>% 
+  left_join(linesWage, by = c("Education level" = "Education level", "Quantile" = "Quantile", "quantileMean" = "quantileMean"))
+
+pointsWage %>% ggplot(aes(region, regionalMean, fill = region))+
+  geom_col()+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
+  gghighlight(regionalMean < eduMean, calculate_per_facet = T)+
+  geom_hline(aes(yintercept = eduMean), lty = 3, colour="blue")+
+  geom_hline(aes(yintercept = quantileMean), lty=2, colour="red")+
+  theme(legend.position = "none")+
+  tiltXText
+
+
+#look at the grandMean for education level ONLY
+linesWage <- DataComp %>% group_by(`Education level`) %>% summarise(grandMeanEdu = mean(Value))
+pointsWage <- DataComp %>% group_by(`Education level`, Quantile, region) %>% summarise(regionalMean = mean(Value))
+
+#join for plot
+DataComp <- left_join(DataComp, linesWage, by="Education level")
+DataComp <- left_join(DataComp, pointsWage, by=c("Education level" = "Education level", "region" = "region", "Quantile" = "Quantile"))
+
+#graph
+DataComp %>% ggplot(aes(region,Value))+
+  geom_boxplot()+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
+  gghighlight(mean(Value)<mean(grandMeanEdu), calculate_per_facet = T)+
+  geom_hline(aes(yintercept = grandMeanEdu), lty = 3, colour = "blue")+
+  geom_point(aes(y=regionalMean), pch = 4, colour="red",data=pointsWage)+
+  tiltXText+
+  labs(x = "Region", y="Percentage of Children Achiving Min Pro", title = "Comparing Wealth with Completion Rate")
+
+
+
+
+
+
+## redo of the thing
+DataProSex <- Data %>% 
+  filter(Indicator == "4.1.1", Units == "PERCENT", Sex != "BOTHSEX", `sub-region` != "NA")
+linesSex <- DataProSex %>% 
+  group_by(`Education level`, Sex) %>% 
+  summarise(sexMean = mean(Value))
+pointsSex <- DataProSex %>% 
+  group_by(`sub-region`, `Education level`, Sex) %>% 
+  summarise(regionalMean = mean(Value))
+
+#join together
+pointsSex <- left_join(pointsSex, linesSex, by = c("Education level" = "Education level", "Sex" = "Sex"))
+
+pointsSex %>% ggplot(aes(`sub-region`,regionalMean, fill = `sub-region`))+
+  geom_col()+
+  facet_grid(`Education level`~Sex)+
+  gghighlight(regionalMean < sexMean, calculate_per_facet = T)+
+  geom_hline(aes(yintercept = sexMean))+
+  theme(legend.position = "hide")+
+  tiltXText
+  
