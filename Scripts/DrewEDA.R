@@ -215,4 +215,66 @@ pointsSex %>% ggplot(aes(`sub-region`,regionalMean, fill = `sub-region`))+
   geom_hline(aes(yintercept = sexMean))+
   theme(legend.position = "hide")+
   tiltXText
+
+pointsWage %>% ggplot(aes(region,regionalMean,fill=Quantile))+
+  geom_col(position = position_dodge2(preserve = "single",padding=0))+
+  facet_wrap(~`Education level`)+
+  gghighlight(regionalMean < quantileMean, calculate_per_facet = T)+
+  geom_hline(aes(yintercept = quantileMean, colour = Quantile))+
+  #theme(legend.position = "hide")+
+  tiltXText
+
+
+
+
+pointsWage %>% 
+  ggplot(aes(x = region, y = regionalMean, fill = `Education level`)) +
   
+  # 1. Create the dodged bars
+  # Inside your geom_col:
+  geom_col(position = position_dodge2(preserve = "single", padding = 0))+  
+  # 2. Facet by Quantile as requested
+  facet_wrap(~ Quantile, labeller = labeller("Quantile" = c("_T" = "Total"))) +
+  
+  # 3. Apply highlighting
+  gghighlight(
+    regionalMean < eduMean, 
+    calculate_per_facet = TRUE,
+    # This ensures non-highlighted bars are light grey rather than invisible
+    unhighlighted_params = list(fill = "grey85", alpha = 1) 
+  ) +
+  
+  # 4. Add the reference lines (Mean markers)
+  # We add this AFTER gghighlight so the blue lines are always visible
+  geom_errorbar(
+    aes(ymin = eduMean, ymax = eduMean),
+    position = position_dodge(width = 0.9),
+    width = 0.7,
+    color = "blue",
+    linetype = 3,
+    size = 1
+  ) +
+  
+  # 5. Labels and Formatting
+  labs(
+    x = "Region", 
+    y = "Rate of Completion", 
+    title = "Comparing Wealth with Completion Rate",
+    subtitle = "Colored bars indicate region is below the education mean",
+    fill = "Education Level"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  scale_fill_discrete(labels = c("PRIMAR" = "Primary", "LOWSEC"="L. Second", "UPPSEC" = "U. Second"))
+
+
+pointsWage %>% ggplot(aes(region, regionalMean, fill = region))+
+  geom_col()+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("PRIMAR" = "Primary", "LOWSEC"="L. Second", "UPPSEC" = "U. Second"), "Quantile" = c("_T" = "Total")))+
+  gghighlight(regionalMean < eduMean, calculate_per_facet = T)+
+  geom_hline(aes(yintercept = eduMean), lty = 3, colour="blue")+
+  theme(legend.position = "none")+
+  tiltXText+
+  labs(x = "Region", y="Rate of Completion", title = "Comparing Wealth with Completion Rate", caption = "GDP Indicator 4.1.2", subtitle = "Coloured bars indicate below the mean")

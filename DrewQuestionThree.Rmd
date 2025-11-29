@@ -23,64 +23,51 @@ labs <- setdiff(knitr::all_labels(), "setup")
 ## Wage 
 
 ```{r lookWage}
-## lets make a bar plot
-#make the lines and means
-DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT")
+##make the lines and means
+#set up the data
+DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT", !is.na(region))
+
+#set up the 
 linesWage <- DataComp %>% 
   group_by(`Education level`, Quantile) %>% 
   summarise(quantileMean = mean(Value))
 linesWage2 <- DataComp %>%
   group_by(`Education level`) %>%
   summarise(eduMean = mean(Value))
+
+#join all together
 pointsWage <- DataComp %>% 
   group_by(`Education level`, Quantile, region) %>% 
   summarise(regionalMean = mean(Value)) %>% 
   left_join(linesWage, by = c("Education level" = "Education level", "Quantile" = "Quantile")) %>%
   left_join(linesWage2, by = c("Education level" = "Education level"))
+#reorder data
+pointsWage$`Education level` <- factor(pointsWage$`Education level`, levels = c("PRIMAR", "LOWSEC", "UPPSEC")) 
 
 #plot the data
 pointsWage %>% ggplot(aes(region, regionalMean, fill = region))+
   geom_col()+
-  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
-  gghighlight(regionalMean < quantileMean, calculate_per_facet = T)+
-  #geom_hline(aes(yintercept = eduMean), lty = 3, colour="blue")+
-  geom_hline(aes(yintercept = quantileMean), lty=2, colour="red")+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("PRIMAR" = "Primary", "LOWSEC"="L. Second", "UPPSEC" = "U. Second"), "Quantile" = c("_T" = "Total")))+
+  gghighlight(regionalMean < eduMean, calculate_per_facet = T)+
+  geom_hline(aes(yintercept = eduMean), lty = 3, colour="blue")+
   theme(legend.position = "none")+
-  tiltXText+
-  labs(x = "Region", y="Rate of Completion", title = "Comparing Wealth with Completion Rate")
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))+
+  labs(x = "Region", y="Mean Rate of Completion", title = "Comparing Wealth with Completion Rate", caption = "GDP Indicator 4.1.2", subtitle = "Coloured bars indicate below the mean")
 ```
 
 <!-- results of the plot -->
 
-Within this plot, the general regions are compared with wealth quantiles, i.e. Q1 indicates the poorest of the population, and Q5 the wealthiest. 
+Within the plot, the blue dotted lines are the mean for the level of education, i.e. for primary, lower secondary, and upper secondary. Furthermore, when a bar is coloured this indicates that the region's mean is below the mean of the education level. The means for each the primary, lower secondary and upper secondary are 80, 66, and 47, respectively. 
+When comparing the coloured bars, Africa noticeably is is under the mean is all wealth quantiles, and all education levels.  
+Comparing the wealthiest quantile to the poorest quantile, in primary education all three countries in  the wealthiest quantile also show in the poorest quantile. Interestingly, this is the only instant where this happens. When looking at the two different secondary levels, in both wealthiest quantiles -- Q5 and Q4 -- only Africa is below the mean; however, when comparing that to the poorest quantile, nearly all regions show -- bar Europe in the lower secondary category.
 
 <!-- Discussion/Critical Evaluation -->
 
-The mean completion rate per region seems to almost have more wealthy people lack behind. I don't think this is a fair comparision so adjustment of the graph is needed.
+When looking across the different wealth quantiles, it is important to account for multiple things; for instance, when looking at the different education levels they are not independent of another. In order to progress to from Primary to Lower Secondary, you must complete and pass Primary education, the same goes for Upper Secondary with lower secondary. This is shown in the data with the lower rates of completion as the education level increases. 
 
-Take this plot with a grain of salt, for example look at Europe for Q5. IQR is the entire range, and the median is 100 yet the mean is less than the grandmean. 
+Another factor is informal education, defined by @OKState as "learning about cultural values, norms, and expected behaviours by participating in a society", this affects the quantiles as when a child engages within their respective culture they may find a shift away from education towards something more culturally important -- e.g. working within the family farm, supporting their parents or grandparents, etc. 
 
-```{r lookWealthpt2}
-#plot the data
-pointsWage %>% ggplot(aes(region, regionalMean, fill = region))+
-  geom_col()+
-  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("LOWSEC"="Lower Secondary", "PRIMAR" = "Primary")))+
-  gghighlight(regionalMean < eduMean, calculate_per_facet = T)+
-  geom_hline(aes(yintercept = eduMean), lty = 3, colour="blue")+
-  #geom_hline(aes(yintercept = quantileMean), lty=2, colour="red")+
-  theme(legend.position = "none")+
-  tiltXText+
-  labs(x = "Region", y="Percentage of Children Achiving Min Pro", title = "Comparing Wealth with Completion Rate")
-```
-
-This plot better highlights the wealth disparity, as it highlights the poorer countries to have more issues in educational completion rate, which is known to be historically proven <!-- find another source -->
-
-## Recommendation
-
-Sexes may not exactly demonstrate a need to differentiate, however there may be bias within the data. 
-
-Wealth shows that less fortunate families may need further support. 
-
+Finally, this plot is not a perfect representation of the wealth between the regions, as it only captures the mean rate of completion. One cannot see the spread of information or outliers which may affect the mean, thus changing the information of the plot; however, this may be accounted for using weighted means instead. <!-- look into saying something else -->
 
 # References
 
