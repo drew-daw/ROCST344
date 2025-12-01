@@ -7,14 +7,13 @@ output:
 header-includes:
   - \usepackage{fvextra}
   - \fvset{breaklines}
+#bibliography: ref.bib
+#nocite: '@*'
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#install.packages("rio")
-```
 
-```{r indicatorData, include = FALSE}
 # Install necessary libraries
 library(tidyverse)
 library(rio)
@@ -33,6 +32,8 @@ q3_4.5 <- filter(Data, Indicator == "4.5.1") %>%
 # For analysis purpose, reorder education levels
 q3_4.5$"Education level" <- factor(q3_4.5$"Education level", 
                                     levels = c("PREPRI", "PRIMAR", "LOWSEC", "UPPSEC", "SECOND"))
+
+labs <- setdiff(knitr::all_labels(), "setup")
 ```
 
 ## Gender Parity Analysis
@@ -140,8 +141,6 @@ Europe presents a unique case; about half of the participants achieve equal comp
 
 ## Appendix
 
-```{r appendix-plot, ref.label = 'indicatorData', eval = FALSE}
+```{r appendix-plot, ref.label =labs, eval = FALSE}
 ```
 
-```{r appendix-plot, ref.label = c('genderPlot', 'locationPlot'), eval = FALSE}
-```

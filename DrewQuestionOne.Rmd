@@ -3,7 +3,7 @@ title: "Question 1 EDA"
 author: "Andrew Dawson"
 output: pdf_document
 bibliography: ref.bib
-nocite: '@*'
+nocite: '@cont, @dataset'
 ---
 
 ```{r setup, include=FALSE}

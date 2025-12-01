@@ -25,7 +25,7 @@ labs <- setdiff(knitr::all_labels(), "setup")
 ```{r lookWage}
 ##make the lines and means
 #set up the data
-DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT", !is.na(region))
+DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT", !is.na(Continent))
 
 #set up the 
 linesWage <- DataComp %>% 
@@ -37,7 +37,7 @@ linesWage2 <- DataComp %>%
 
 #join all together
 pointsWage <- DataComp %>% 
-  group_by(`Education level`, Quantile, region) %>% 
+  group_by(`Education level`, Quantile, Continent) %>% 
   summarise(regionalMean = mean(Value)) %>% 
   left_join(linesWage, by = c("Education level" = "Education level", "Quantile" = "Quantile")) %>%
   left_join(linesWage2, by = c("Education level" = "Education level"))
@@ -45,7 +45,7 @@ pointsWage <- DataComp %>%
 pointsWage$`Education level` <- factor(pointsWage$`Education level`, levels = c("PRIMAR", "LOWSEC", "UPPSEC")) 
 
 #plot the data
-pointsWage %>% ggplot(aes(region, regionalMean, fill = region))+
+pointsWage %>% ggplot(aes(Continent, regionalMean, fill = Continent))+
   geom_col()+
   facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("PRIMAR" = "Primary", "LOWSEC"="L. Second", "UPPSEC" = "U. Second"), "Quantile" = c("_T" = "Total")))+
   gghighlight(regionalMean < eduMean, calculate_per_facet = T)+
