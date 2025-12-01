@@ -278,3 +278,7 @@ pointsWage %>% ggplot(aes(region, regionalMean, fill = region))+
   theme(legend.position = "none")+
   tiltXText+
   labs(x = "Region", y="Rate of Completion", title = "Comparing Wealth with Completion Rate", caption = "GDP Indicator 4.1.2", subtitle = "Coloured bars indicate below the mean")
+
+
+
+pointsWage %>% mutate(weightedMean = )

@@ -1,0 +1,162 @@
+---
+title: "Q1_EDA"
+author: "Lewis Miller"
+date: "2025-11-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(rio)
+library(knitr)
+library(kableExtra)
+library(readxl)
+
+
+Countries <- read_csv("C:/Users/44795/OneDrive/R/Group Assignment/all_countries.csv")
+Countries <- Countries %>% select(`country-code`, name, region, `sub-region`)
+
+
+rawData <- read_excel("C:/Users/44795/OneDrive/R/Group Assignment/Goal4.xlsx")
+
+```
+
+This analysis examines global variation in educational access using several SDG 4 indicators, with a primary focus on Indicator 4.1.2 (completion rate across primary, lower secondary, and upper secondary levels). By extracting the most recent available data for each country, we identify those lagging furthest behind and assess how completion rates differ across continents. The findings highlight persistent regional inequalities and reveal where progress has been slow or stagnant.
+
+```{r, include=FALSE}
+data <- rawData %>% select(Indicator, SeriesCode, GeoAreaCode, GeoAreaName, TimePeriod, Value, Source, FootNote, Age, `Education level`, Location, Nature, Quantile, Sex, `Type of skill`,Units)
+
+chars_to_factors_except <- function(df, iDontLike) {
+  df %>% mutate(across(!all_of(iDontLike),as.factor))
+}
+
+changeToFactor <- function(df, cols){
+  df %>% mutate(across(all_of(cols),as.factor))
+}
+
+changeToNumber <- function(df, cols){
+  df %>% mutate(across(all_of(cols),as.numeric))
+}
+
+data <- chars_to_factors_except(data, c("TimePeriod", "Value", "Source", "FootNote"))
+data <- changeToNumber(data, c("TimePeriod", "Value"))
+
+data_fixed <- data %>% mutate(GeoAreaCode = as.character(GeoAreaCode))
+Countries_fixed <- Countries %>% mutate(`country-code` = as.character(`country-code`))
+
+Data <- left_join(data_fixed, Countries_fixed,
+                    join_by(GeoAreaCode == `country-code`))
+
+names(Data)[names(Data) == 'region'] <- 'Continent'
+names(Data)[names(Data) == 'sub-region'] <- 'SubRegion'
+
+Data <- Data %>% select(Indicator, SeriesCode, GeoAreaCode, GeoAreaName, TimePeriod, Value, Source, FootNote, Age, `Education level`, Location, Nature, Quantile, Sex, `Type of skill`, Units, Continent, SubRegion)
+
+Data[which(Data$GeoAreaName=="Kosovo"),17] <- "Europe"
+Data[which(Data$GeoAreaName=="Kosovo"),18] <- "Southern Europe"
+Data[which(Data$GeoAreaName=="Australia and New Zealand"),17] <- "Oceania"
+Data[which(Data$GeoAreaName=="Australia and New Zealand"),18] <- "Australia and New Zealand"
+Data[which(Data$GeoAreaName=="Oceania (exc. Australia and New Zealand)"),17] <- "Oceania"
+```
+
+
+
+```{r}
+
+library(dplyr)
+
+latest_values <- Data %>%
+  filter(Sex == "BOTHSEX",
+         Indicator %in% c("4.1.1", "4.1.2", "4.6.1", "4.a.1", "4.c.1")) %>%
+  arrange(GeoAreaName, TimePeriod) %>%
+  group_by(GeoAreaName, Indicator) %>%
+  slice_tail(n = 1) %>%     
+  ungroup()
+
+```
+
+
+
+```{r}
+worst10 <- function(ind_code) {
+  latest_values %>%
+    filter(Indicator == ind_code) %>%
+    arrange(Value) %>%          
+    slice_head(n = 10) %>%
+    select(GeoAreaName, Continent, SubRegion, TimePeriod, Value)
+}
+
+```
+
+
+
+
+```{r}
+worst_412 <- worst10("4.1.2")
+
+kable(worst_412,
+      caption = "Worst 10 countries for Indicator 4.1.2 (Completion Rate)",
+      digits = 1) %>%
+  kable_styling(full_width = FALSE)
+```
+
+Using the latest available values for each country, we extracted the ten lowest performers.
+All ten countries fall within low-income or lower-middle-income regions, and eight of the ten are located in Sub-Saharan Africa, including Côte d’Ivoire, Angola, Malawi, Madagascar, Mali, and Rwanda.
+This strongly suggests that educational access continues to be highly constrained in African regions, where systemic barriers such as poverty, conflict, and limited infrastructure are well-documented.
+
+A notable methodological limitation arises from the fact that countries have uneven reporting years. For example, Qatar’s most recent observation is from 2012, whereas others have data from 2018–2019. As a result, some “low-performing” countries may have improved since their last measurement. This highlights a broader challenge in using SDG datasets for cross-country comparisons: data recency varies significantly.
+
+
+
+Now, looking at each continents development from their earliest datapoint to their most recent:
+
+# Continental trends in school completion
+
+```{r}
+
+continent_trends <- Data %>% 
+  filter(Indicator == "4.1.2",
+         Sex == "BOTHSEX") %>%
+  group_by(Continent, TimePeriod) %>%
+  summarise(
+    mean_completion = mean(Value, na.rm = TRUE),
+    n_countries      = n_distinct(GeoAreaName),
+    .groups = "drop"
+  )
+
+
+ggplot(continent_trends,
+       aes(x = TimePeriod, y = mean_completion, colour = Continent)) +
+  geom_line(size = 1.1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Trends in School Completion Rates (Indicator 4.1.2)",
+    subtitle = "Average completion rate by continent over time",
+    x = "Year",
+    y = "Mean completion rate (%)",
+    colour = "Continent"
+  ) +
+  theme_minimal(base_size = 13)
+
+```
+
+To reduce noise arising from irregular reporting and to understand broader patterns, we computed average completion rates over time for each continent. The resulting plot (Figure 1) reveals several key insights:
+
+Clearly, as shown previously, we notice African countries struggling with school completion rates. 
+Not only are their school completion rates currently significantly lower than other continents, but their trend over the last 5 years does not look promising.
+Asia and the Americas show higher completion rates with stable increasing trends throughout the timeline.
+Europe reports the highest overall completion rates, with minimal variation over time and near-universal completion for primary and lower secondary education.
+
+
+Oceania displays a sharp and irregular decline in completion rates, which appears misleading at first glance. This pattern could well be driven by the dominance of data from Small Island Developing States (SIDS), such as Tuvalu and Samoa, whose extremely small populations make their indicators statistically volatile. For example, despite having a population over 2,000 times smaller than Australia, Tuvalu contributes nearly half as many data points (380 vs 899). As a result, small fluctuations in enrolment or reporting can disproportionately shift regional averages.
+
+This highlights a key limitation: regional aggregates for Oceania should be interpreted cautiously, as they are highly sensitive to small-island reporting and do not reliably reflect the trend for the region's largest country (Australia). Analysts should consider weighting by population or examining Australia separately if a stable trend is required.
+
+
+## References
+
+*UN DESA (2023). Small Island Developing States Data Challenges Report.

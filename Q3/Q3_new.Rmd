@@ -1,0 +1,147 @@
+---
+title: "Q3 EDA"
+author: "Aldanah Al Saif"
+output:
+  pdf_document:
+    fig_caption: yes
+header-includes:
+  - \usepackage{fvextra}
+  - \fvset{breaklines}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("rio")
+```
+
+```{r indicatorData, include = FALSE}
+# Install necessary libraries
+library(tidyverse)
+library(rio)
+library(dplyr)
+
+# Load data
+load("Data.RData")
+
+# Filter data to only handle data of indicator 4.5.1 for parity analysis
+q3_4.5 <- filter(Data, Indicator == "4.5.1") %>%
+          # Standardizing all values into ratios
+          mutate(Value = as.numeric(Value),
+          Value_ratio = case_when(Units == "PERCENT" ~ Value / 100,
+                                  Units == "Ratio" ~ Value))
+
+# For analysis purpose, reorder education levels
+q3_4.5$"Education level" <- factor(q3_4.5$"Education level", 
+                                    levels = c("PREPRI", "PRIMAR", "LOWSEC", "UPPSEC", "SECOND"))
+```
+
+## Gender Parity Analysis
+
+```{r genderPlot, warning = FALSE, echo = FALSE, fig.cap = "Adjusted gender parity index for completion rate via indicator 4.5.1", fig.width=9.5, fig.height=6} 
+# Location Parity Analysis
+
+# Filter out data needed to calculate gender parity index for completion rate
+genderData <- subset(q3_4.5, 
+                     SeriesDescription == "Adjusted gender parity index for completion rate, by location, wealth quintile and education level",
+                     select = c(`Education level`, Value_ratio, SubRegion, Continent))
+  
+# Produce plot of gender parity according to education levels over the sub-regions
+ganderPlot <- ggplot(data = genderData, aes(x = factor(SubRegion), y = Value_ratio)) +
+              geom_boxplot(aes(fill = Continent)) +
+              facet_grid(`Education level` ~ ., 
+                          labeller = labeller("Education level" = c("PRIMAR" = "Primary",
+                                                                    "LOWSEC" = "Lower Secondary", 
+                                                                    "UPPSEC" = "Upper Secondary"))) +
+
+              # Add threshold line for parity (=1 where equality happens)
+              geom_hline(yintercept = 1, 
+                         colour = "red",
+                         linetype = "dashed") +
+  
+              # Point out median parity by education level and year
+              stat_summary(fun = median, 
+                           shape = 19, 
+                           size = 0.1, 
+                           color = "red") +
+  
+              # Improve plot labels and theme
+              labs(title = "Gender parity index for completion rate",
+                   x = "Sub-Region",
+                   y = "Parity Female/Male Index") +
+              theme(plot.title = element_text(hjust = 0.5, size = 17),
+                    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+              scale_fill_brewer(palette = "Pastel1")
+print(ganderPlot)
+
+```
+The provided figure analyzes the gender parity index for education completion rates across various continents and sub-regions. The key focus is on a red-dashed threshold line representing equality at a value of 1, indicating that female and male completion rates are equal. Each education level's median completion rates are highlighted by a red point, with box plots color-coded by continent to trace patterns.with box plots color-coded by continent to trace patterns.
+
+In Oceania, distinct trends emerge among its sub-regions. Melanesia reaches gender parity in primary and lower secondary education, with medians positioned at the equality point. This indicates that the genders are similarly distributed across these regions. However, this trend shifts when Melanesia displays a decline in favor of males in higher education. Conversely, Micronesia starts with a slight median advantage for females and has steadily maintained this preference. Moreover, Despite Polynesia having a large range of gender parities, the analysis reveals that more than half of these participants have a gender parity index, based on median values, indicating a preference for females in all education levels.
+
+In Africa, Northern Africa and Sub-Saharan Africa exhibit contrasting trends. The data indicates that Northern Africa shows an increasing favorability toward females as education levels rise, while Sub-Saharan Africa displays trends in the opposite direction, reflecting a decline in gender parity. This analysis underscores varying patterns of gender equality in educational attainment across different regions.
+
+### Recommendations 
++ Conduct a thorough analysis of educational resources, models, and programs in Northern Africa and Sub-Saharan Africa to identify effective strategies for enhancing gender equality.
+
++ Develop programs to address the decline in female enrollment in education at all levels in Polynesia. These programs should include mentorship initiatives and community awareness efforts, as well as campaigns specifically aimed at empowering girls.
+
++ Ensure that educational resources are distributed equitably across sub-regions, providing learning materials that are accessible to both genders.
+
+## Location Parity Analysis
+
+```{r locationPlot, warning = FALSE, echo = FALSE, fig.cap = "Adjusted location parity index for completion rate via indicator 4.5.1", fig.width=8, fig.height=5} 
+# Location Parity Analysis
+
+# Filter out data needed to calculate location parity index for completion rate
+locationData <- subset(q3_4.5, 
+                       SeriesDescription == "Adjusted location parity index for completion rate, by sex, wealth quintile and education level",
+                       select = c(SubRegion, `Education level`, Value_ratio, Continent, TimePeriod))
+  
+# Produce plot of location parity according to education levels over the sub-regions
+locationPlot <- ggplot(data = locationData, aes(x = factor(Continent), y = Value_ratio)) +
+                geom_boxplot(aes(fill = Continent)) +
+                facet_grid(`Education level` ~ ., 
+                           labeller = labeller("Education level" = c("PRIMAR" = "Primary",
+                                                                    "LOWSEC" = "Lower Secondary", 
+                                                                    "UPPSEC" = "Upper Secondary"))) +
+  
+                # Add threshold line for parity (=1 where equality happens)
+                geom_hline(yintercept = 1, 
+                           colour = "red",
+                           linetype = "dashed") + 
+  
+                # Point out averages by education level and year
+                stat_summary(fun = median, 
+                             shape = 19, 
+                             size = 0.2, 
+                             color = "red") +
+  
+                # Improve plot labels and theme
+                labs(title = "Location parity index for completion rate",
+                     x = "Continent",
+                     y = "Parity Index Rural/Urban") +
+                theme(plot.title = element_text(hjust = 0.5, size = 17),
+                      legend.position = "none") +
+                scale_fill_brewer(palette = "Pastel1")
+print(locationPlot)
+
+```
+The figure above illustrates the location parity index for completion rates across various education levels and continents. The key focus is on a red-dashed threshold line representing equality at a value of 1 indicating the point of equality between rural and urban locations in terms of educational completion rates. For anlysis, each education level's median completion rates are highlighted by a red point, 
+
+In Africa and Oceania, there's a clear trend where participants generally  demonstrate lower location parity that strongly favors urban areas across all education levels, with nearly all participants demonstrating lower completion rates in rural areas. Meanwhile, the Americas and Asia reflect a more mixed scenario: around half of the participants achieve parity in completion rates, while the other half still show a preference for urban education access. The bias towards urban settings is particularly pronounced in lower secondary and upper secondary education, where a significant majority favors urban completion rates. Notably, this urban bias increases to over half of the data in lower secondary education and nearly all of the data in upper secondary education.
+
+Europe presents a unique case; about half of the participants achieve equal completion rates, but the other half shows a consistent preference for urban education. This indicates varying levels of educational equity across different regions and levels of education.
+
+### Recommendations 
+
++ Invest in resources for rural schools to enhance educational access. This can involve providing digital tools for online learning and improving transportation options for students, especially at the lower and upper secondary education levels. 
+
++ Consider targeted training in rural areas of Africa and Oceania, as well as fostering strengths in the learning environment.
+
+## Appendix
+
+```{r appendix-plot, ref.label = 'indicatorData', eval = FALSE}
+```
+
+```{r appendix-plot, ref.label = c('genderPlot', 'locationPlot'), eval = FALSE}
+```
