@@ -1,0 +1,143 @@
+# Temporal Trends
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.width=9.5, fig.height=6)
+
+#echo = FALSE, warning = FALSE, message = FALSE, out.width = "80%", fig.align = "center"
+
+# Install necessary libraries
+require(tidyverse)
+require(gghighlight)
+require(knitr)
+require(kableExtra)
+```
+
+Building on the regional inequalities identified in Question 1, this section examines how key SDG4 indicators have evolved over time to assess whether progress is accelerating, stabilising, or slowing. While spatial patterns highlight where access is weakest, temporal trends reveal whether these gaps are closing or becoming increasingly entrenched. To provide this context, we analyse two indicators with consistent long-term coverage: completion rates (4.1.2) and teacher qualification (4.c.1).
+
+## Completion Rates per Education Levels
+
+```{r figure1}
+Q2Data <- Data %>%
+  filter(Indicator %in% c("4.1.2", "4.c.1"))
+CompRate <- Data %>%
+  filter(Indicator == "4.1.2")
+Teaching <- Data %>%
+  filter(Indicator == "4.c.1")
+
+edu_ts <- Q2Data %>%
+  group_by(Indicator, `Education level`, TimePeriod) %>%
+  summarise(mean_value = mean(Value, na.rm = TRUE)) %>%
+  ungroup()
+
+edu_ts <- edu_ts %>%
+  mutate(`Education level` = recode(`Education level`,
+                                    "PRIMAR" = "Primary",
+                                    "LOWSEC" = "Lower Secondary",
+                                    "UPPSEC" = "Upper Secondary",
+                                    "PREPRI" = "Pre-primary",
+                                    "SECOND" = "Secondary"))
+
+desired_order <- c("Primary", "Lower Secondary", "Upper Secondary")
+edu_ts$`Education level` <- factor( as.character(edu_ts$`Education level`), levels=desired_order )
+edu_ts <- edu_ts[order(edu_ts$`Education level`),]
+
+A1 <- edu_ts %>%
+  filter(Indicator == "4.1.2") %>%
+  ggplot(aes(x = TimePeriod, y = mean_value, colour = `Education level`)) +
+  geom_line(alpha = 0.4, linewidth = 0.9, linetype = "dashed") +
+  geom_smooth(se = FALSE, linewidth = 0.8) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = 2015, linetype = "dashed", colour = "grey40") +
+  annotate("text", x = 2014.75, y = 90, label = "SDGs begin (2015)", hjust = -0.1) +
+  labs(title = "Global Completion Rates\nby Education Level (2010–2019)",
+       subtitle = "All levels improve, but upper secondary remains the\nkey bottleneck for educational progression",
+       x = "Year",
+       y = "Completion Rate (%)",
+       colour = "Education Level",
+       caption = "Source: SDG4 Global Database (Indicator 4.1.2)") +
+  scale_x_continuous(breaks = seq(2010, 2019, by = 2)) +
+  scale_colour_brewer(palette = "Dark2") +
+  annotate("rect", xmin = 2017, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = 0.1, fill = "blue") +
+  theme_minimal(base_size = 13)
+A1
+```
+
+Figure 2.1 presents global completion rates for primary, lower secondary and upper secondary education from 2010 to 2019. All three levels show steady improvement, with primary rising from about 72% to 80% and lower secondary from roughly 53% to 70%—the largest absolute gain. Upper secondary remains the lowest-performing stage but still increases from approximately 37% to 50%, reflecting progress at the most challenging transition point in the education pipeline.
+
+A clear acceleration follows the introduction of SDG4 in 2015, with upper secondary showing the steepest single-year rise. This suggests early SDG-related reforms may have strengthened transitions beyond lower secondary, complementing the patterns highlighted in Question 1. However, from 2017 to 2019 all three levels display a noticeable plateau, potentially reflecting structural barriers as systems approach higher coverage or early vulnerability prior to the COVID-19 pandemic. Because upper secondary completion critically shapes tertiary access and labour-market outcomes, this persistent gap remains a strategic concern.
+
+However, global aggregation and the smoothing line obscure substantial country-level variation, meaning sharp fluctuations and inequalities are not fully captured. Limited post-2019 data restricts assessment of COVID-19 impacts, and the absence of uncertainty intervals reduces confidence in interpreting the strength of these trends.
+
+##  Qualified Primary School Teachers over Continents
+
+```{r figure2}
+region_ts <- Q2Data %>%
+  group_by(Indicator, Continent, TimePeriod, `Education level`) %>%
+  summarise(mean_value = mean(Value, na.rm = TRUE)) %>%
+  ungroup()
+region_ts <- region_ts %>%
+  filter(!Continent %in% c(NA))
+
+desired_order2 <- c("Europe", "Asia", "Africa", "Americas", "Oceania")
+region_ts$Continent <- factor( as.character(region_ts$Continent), levels=desired_order2 )
+region_ts <- region_ts[order(region_ts$Continent),]
+
+B3 <- region_ts %>%
+  filter(Indicator == "4.c.1", `Education level` == "PRIMAR") %>%
+  ggplot(aes(x = TimePeriod, y = mean_value, colour = Continent)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = 2015, linetype = "dashed", colour = "grey40") +
+  annotate("text", x = 2015, y = 100, label = "SDGs begin (2015)", hjust = -0.1) +
+  labs(title = "Primary School Teacher Qualifications\nby Continents (2010–2019)",
+       subtitle = "High-performing regions are stable, but others\nshow volatility and slowing progress after 2016",
+       x = "Year",
+       y = "Qualified Teachers (%)",
+       caption = "Source: SDG4 Global Database (Indicator 4.c.1)") +
+  scale_x_continuous(breaks = seq(2010, 2019, by = 2)) +
+  scale_colour_brewer(palette = "Dark2") +
+  annotate("rect", xmin = 2016, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = 0.1, fill = "blue") +
+  theme_minimal(base_size = 13)
+B3
+```
+
+Figure 2.2 examines primary teacher qualification rates across continents between 2010 and 2019. Europe and Asia maintain the highest levels, typically above 90%, while Africa and the Americas show moderate but consistent gains. Oceania exhibits sharp fluctuations—including a decline after 2016—echoing the volatility observed in its completion rates. Across most continents, progress slows after 2016, mirroring the inflection points noted in Figure 1 and emphasising the close link between a stable, well-trained workforce and sustainable expansion in educational access.
+
+Continental averages mask significant within-region disparities, particularly in Oceania where small-island states dominate the dataset and distort regional trends—a limitation also noted in the spatial analysis. As with Figure 1, the absence of uncertainty intervals and truncated time coverage constrain interpretation of systemic workforce pressures.
+
+\newpage
+
+## Slopes From Both Trends
+
+```{r table}
+CompSlopes <- edu_ts %>%
+  filter(Indicator == "4.1.2") %>%
+  group_by(`Education level`) %>%
+  summarise(Slope = coef(lm(mean_value ~ TimePeriod))[2]) %>%
+  mutate(Indicator = "Completion", Group = `Education level`) %>%
+  select(Indicator, Group, Slope) %>%
+  arrange(desc(Slope))
+  
+TeachSlopes <- region_ts %>%
+  filter(Indicator == "4.c.1", `Education level` == "PRIMAR") %>%
+  group_by(Continent) %>%
+  summarise(Slope = coef(lm(mean_value ~ TimePeriod))[2]) %>%
+  mutate(Indicator = "Teacher Qualification", Group = Continent) %>%
+  select(Indicator, Group, Slope) %>%
+  arrange(desc(Slope))
+
+Slopes <- rbind(CompSlopes, TeachSlopes) %>%
+  mutate (Slope = round(Slope, 2))
+
+kable(Slopes, 
+      caption = "Annual Rates of Change for 4.1.2 and 4.c.1") %>%
+  kable_styling(full_width = FALSE)
+```
+
+Table 2.1 summarises the annual rates of change for both indicators. Lower secondary completion improves the fastest (slope roughly 1.47), followed by upper secondary (1.25) and primary (0.94). This suggests that although upper secondary remains the most challenging stage, its trajectory is increasingly positive. For teacher qualifications, the Americas show the strongest improvement, while Africa, Asia and Oceania grow more modestly. Europe’s slight negative slope aligns with the decline observed in Figure 2, signalling that even high-performing regions face emerging challenges.
+
+## Recommendations
+
+These temporal trends highlight several strategic priorities for the WFoundation. First, the slowdown in progress after 2016 suggests that education systems remain vulnerable to external shocks, indicating a need for investments that strengthen long-term system resilience rather than short-term gains. Second, the persistent bottleneck in upper secondary completion and the volatility observed in teacher qualification trends—particularly in parts of Africa and Oceania—point to structural constraints that require targeted, multi-year support aimed at improving both student retention and workforce stability. Third, the differing rates of progress across regions underline the importance of ensuring that future gains are equitable; without focused action, global disparities risk widening rather than narrowing. Finally, the strong alignment between shifts in completion rates and teacher qualification signals that interventions should be coordinated across indicators, emphasising integrated strategies that simultaneously enhance teaching capacity, learning environments and pathways through the education system.
+
+Overall, integrating the spatial disparities from Question 1 with these temporal patterns shows that although global education outcomes are improving, progress is uneven and increasingly fragile. Understanding why these disparities persist—and how factors such as wealth, gender and location shape them—provides the essential next step. Question 3 explores these underlying inequalities in greater depth to inform where targeted interventions can be most effective.

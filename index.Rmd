@@ -1,0 +1,28 @@
+--- 
+title: "ST344 - Group ROC Report"
+author: "Aldanah Al Saif, Oscar Barnes, Andrew Dawson, Kim Hudson, Lewis Miller"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: report
+bibliography: ref.bib
+geometry: margin=2cm
+nocite: "@*"
+
+# url: your book url like https://bookdown.org/yihui/bookdown
+# cover-image: path to the social sharing image like images/cover.jpg
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.width=9.5, fig.height=6)
+
+# Install necessary libraries
+require(tidyverse)
+require(rio)
+require(dplyr)
+require(gghighlight)
+
+# Load data
+load("Data/cleanedData.RData")
+
+labs <- setdiff(knitr::all_labels(), "setup")
+```

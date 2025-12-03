@@ -1,0 +1,79 @@
+---
+title: "Question 3 EDA"
+author: "Andrew Dawson"
+output: pdf_document
+bibliography: ref.bib
+nocite: '@*'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F)
+
+#import Libraries and Data
+require(tidyverse)
+require(gghighlight)
+require(knitr)
+load("Data/cleanedData.RData")
+labs <- setdiff(knitr::all_labels(), "setup")
+```
+
+
+# Comparing Disparities in Educational Access
+
+## Wage 
+
+```{r lookWage}
+##make the lines and means
+#set up the data
+DataComp <- Data %>% filter(Indicator == "4.1.2", Units == "PERCENT", !is.na(Continent))
+
+#set up the 
+linesWage <- DataComp %>% 
+  group_by(`Education level`, Quantile) %>% 
+  summarise(quantileMean = mean(Value))
+linesWage2 <- DataComp %>%
+  group_by(`Education level`) %>%
+  summarise(eduMean = mean(Value))
+
+#join all together
+pointsWage <- DataComp %>% 
+  group_by(`Education level`, Quantile, Continent) %>% 
+  summarise(regionalMean = mean(Value)) %>% 
+  left_join(linesWage, by = c("Education level" = "Education level", "Quantile" = "Quantile")) %>%
+  left_join(linesWage2, by = c("Education level" = "Education level"))
+#reorder data
+pointsWage$`Education level` <- factor(pointsWage$`Education level`, levels = c("PRIMAR", "LOWSEC", "UPPSEC")) 
+
+#plot the data
+pointsWage %>% ggplot(aes(Continent, regionalMean, fill = Continent))+
+  geom_col()+
+  facet_grid(`Education level` ~ Quantile, labeller = labeller("Education level"=c("PRIMAR" = "Primary", "LOWSEC"="L. Second", "UPPSEC" = "U. Second"), "Quantile" = c("_T" = "Total")))+
+  gghighlight(regionalMean < eduMean, calculate_per_facet = T)+
+  geom_hline(aes(yintercept = eduMean), lty = 3, colour="blue")+
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))+
+  labs(x = "Region", y="Mean Rate of Completion", title = "Comparing Wealth with Completion Rate", caption = "GDP Indicator 4.1.2", subtitle = "Coloured bars indicate below the mean")
+```
+
+<!-- results of the plot -->
+
+Within the plot, the blue dotted lines are the mean for the level of education, i.e. for primary, lower secondary, and upper secondary. Furthermore, when a bar is coloured this indicates that the region's mean is below the mean of the education level. The means for each the primary, lower secondary and upper secondary are 80, 66, and 47, respectively. 
+When comparing the coloured bars, Africa noticeably is is under the mean is all wealth quantiles, and all education levels.  
+Comparing the wealthiest quantile to the poorest quantile, in primary education all three countries in  the wealthiest quantile also show in the poorest quantile. Interestingly, this is the only instant where this happens. When looking at the two different secondary levels, in both wealthiest quantiles -- Q5 and Q4 -- only Africa is below the mean; however, when comparing that to the poorest quantile, nearly all regions show -- bar Europe in the lower secondary category.
+
+<!-- Discussion/Critical Evaluation -->
+
+When looking across the different wealth quantiles, it is important to account for multiple things; for instance, when looking at the different education levels they are not independent of another. In order to progress to from Primary to Lower Secondary, you must complete and pass Primary education, the same goes for Upper Secondary with lower secondary. This is shown in the data with the lower rates of completion as the education level increases. 
+
+Another factor is informal education, defined by @OKState as "learning about cultural values, norms, and expected behaviours by participating in a society", this affects the quantiles as when a child engages within their respective culture they may find a shift away from education towards something more culturally important -- e.g. working within the family farm, supporting their parents or grandparents, etc. 
+
+Finally, this plot is not a perfect representation of the wealth between the regions, as it only captures the mean rate of completion. One cannot see the spread of information or outliers which may affect the mean, thus changing the information of the plot; however, this may be accounted for using weighted means instead. <!-- look into saying something else -->
+
+# References
+
+<div id="refs"></div>
+
+# Appendix
+
+```{r, ref.label=labs, echo=T, eval=F}
+```

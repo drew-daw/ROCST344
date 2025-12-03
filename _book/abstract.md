@@ -1,0 +1,3 @@
+# Abstract {-}
+
+This report investigates global patterns in educational access and equity using data from the United Nations Sustainable Development Goal 4 (SDG4) framework. Drawing on multiple indicators—including completion rates (4.1.1 and 4.1.2), literacy (4.6.1), school facilities (4.a.1) and teacher qualifications (4.c.1)—the analysis examines regional disparities, temporal trends, and intersections with related SDGs on poverty (SDG 1) and gender equality (SDG 5). The results highlight persistent structural inequalities, uneven improvement across regions, and clear relationships between broader socio-economic factors and educational outcomes.

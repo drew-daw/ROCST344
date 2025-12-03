@@ -1,0 +1,20 @@
+book_filename: "ROC ST344 Group Report"
+new_session: true
+before_chapter_script: setup.R
+delete_merged_file: true
+language:
+  ui:
+    chapter_name: "Chapter "
+rmd_files: [
+  "index.Rmd",
+  "abstract.Rmd",
+  "intro.Rmd",
+  "method.Rmd",
+  "DrewData.Rmd",
+  "FullQuestionOne.Rmd",
+  "FullQuestionTwo.Rmd",
+  "FullQuestionThree.Rmd",
+  "FullQuestionFour.Rmd",
+  "conclusion.Rmd",
+  "ref.Rmd"
+]

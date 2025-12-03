@@ -1,0 +1,212 @@
+# Poverty and Gender Inequality: Alignment with the Sustainable Development Goals
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.width=9.5, fig.height=6)
+
+# Install necessary libraries
+require(tidyverse)
+require(gghighlight)
+require(knitr)
+require(kableExtra)
+require(readxl)
+require(rio)
+
+# Load data
+Poverty_UNSDG <- read_excel("Data/Poverty_UNSDG.xlsx")
+Marriage_UNSDG <- import("Data/Goal5 - all groupings.xlsx", col_types = "text")
+```
+
+Tackling gender and poverty inequalities is crucial for promoting equity and improving educational outcomes, leading to a more inclusive and fair society.
+
+## Poverty in Relation to SDG 1
+
+```{r yearColumns, include = FALSE}
+# SDG 1 Analysis
+
+# Firstly, identifying the year columns and changing from wide formatting to long formatting:
+
+Pov_long <- Poverty_UNSDG %>%
+            pivot_longer(cols = starts_with("20"), 
+                         names_to = "Year", 
+                         values_to = "PovertyRate",
+                         values_drop_na = TRUE) %>%
+            mutate(Year = as.numeric(Year))
+
+
+Pov_latest <- Pov_long %>%
+              group_by(GeoAreaCode) %>%
+              slice_max(order_by = Year, n = 1, with_ties = FALSE) %>%
+              ungroup() %>%
+              select(GeoAreaCode, PovertyRate)
+
+```
+
+```{r filterIndicator, include = FALSE}
+# Filtering initial data by just data for indicator 4.1.2 (school completion)
+
+Edu_completion <- Data %>%
+                  filter(Indicator == "4.1.2") %>%   
+                  filter(Sex == "BOTHSEX") %>%            
+                  filter(!is.na(Value)) %>%
+                  group_by(GeoAreaCode) %>%
+                  slice_max(order_by = TimePeriod, n = 1, with_ties = FALSE) %>% 
+                  ungroup() %>%
+                  select(GeoAreaCode, GeoAreaName, Continent, CompletionRate = Value)
+
+```
+
+```{r merge, include = FALSE}
+# Merging data sets by location and year:
+
+Edu_completion <- Edu_completion %>%
+                  mutate(GeoAreaCode = as.character(GeoAreaCode))
+
+Pov_latest <- Pov_latest %>%
+              mutate(GeoAreaCode = as.character(GeoAreaCode))
+
+EduPov <- Edu_completion %>%
+          left_join(Pov_latest, by = "GeoAreaCode") %>%
+          filter(!is.na(PovertyRate), !is.na(CompletionRate))
+
+```
+
+```{r povertyCategorization, include = FALSE}
+# Creating Poverty catagories and ordering them from low to moderate to high.
+
+EduPov <- EduPov %>%
+          mutate(PovertyGroup = case_when(PovertyRate < 10 ~ "Low poverty (<10%)",
+                                          PovertyRate < 30 ~ "Moderate poverty (10–30%)",
+                                          TRUE             ~ "High poverty (>30%)"
+          ))
+
+EduPov$PovertyCategory <- factor(EduPov$PovertyGroup,
+                                 levels = c("Low poverty (<10%)",
+                                             "Moderate poverty (10–30%)",
+                                             "High poverty (>30%)")
+                                  )
+
+```
+
+```{r povertyPlot, echo = FALSE, out.width= "80%"}
+ggplot(EduPov, aes(PovertyCategory, CompletionRate)) +
+  geom_boxplot(fill = "navy", alpha = 0.7, outlier.alpha = 0.2) +
+  labs(title = "Educational Completion Rates by Poverty Category",
+        subtitle = "Latest available data — Higher poverty countries show substantially lower completion",
+        x = "Poverty category",
+        y = "Completion rate (%)",
+        caption = "GDB indicators 1.1.1 and 4.1.2") +
+  theme_minimal(base_size = 14)
+
+```
+
+Figure 4.1 illustrates the relationship between national poverty levels (SDG 1.1.1: proportion of population below the international poverty line) and school completion rates (SDG 4.1.2). The pattern is clear: higher poverty is strongly associated with lower educational completion.
+
+Low-poverty countries (<10%):
+
+Display the highest completion rates, typically between 85–100%, with very little variation. 
+This suggests that once extreme poverty is minimised, education systems tend to operate with stable, near-universal completion.
+
+Moderate-poverty countries (10–30%):
+
+Show significantly more variation, with completion rates ranging from 30% to 90%.
+The wide spread indicates inconsistent education performance despite similar poverty levels—reflecting differences in governance, conflict, rural access, and policy investment.
+
+Finally, high-poverty countries (>30%):
+
+Exhibit the lowest median completion rates, often below 50%, and include many observations near zero.
+This highlights a cycle where extreme poverty directly suppresses school participation, especially in regions affected by food insecurity, child labour, and limited infrastructure.
+
+Overall, these results provide evidence of a strong and systematic linkage between SDG 1 (poverty reduction) and SDG 4 (quality education). Countries struggling with high poverty are disproportionately unable to sustain educational progress, reinforcing the idea that SDG targets cannot be pursued in isolation. 
+
+### Recommendations
+
+Stage two analysis should incorporate longitudinal analysis to assess whether improvements in poverty translate into educational gains.
+We would also recommend looking into joint modelling of poverty, gender, and location to address SDGs 1, 4, and 5 together for a strong stage 2 analysis.
+
+\newpage
+
+## Gender Inequality in Relation to SDG 5
+
+```{r dataFunctions, include = FALSE}
+chars_to_factors_except <- function(df, iDontLike) {
+  df %>% mutate(across(!all_of(iDontLike),as.factor))
+}
+
+changeToFactor <- function(df, cols){
+  df %>% mutate(across(all_of(cols),as.factor))
+}
+
+changeToNumber <- function(df, cols){
+  df %>% mutate(across(all_of(cols),as.numeric))
+}
+```
+
+```{r Goal5cleaningData, include = FALSE}
+# SDG 5 Analysis
+
+# Filter out data needed to calculate completion rate
+goal4Data <- subset(Data, Indicator == "4.1.2") %>%
+              select(GeoAreaCode, GeoAreaName, TimePeriod, Sex, Completion_rate = Value, `Education level`)
+
+# Data reprocessing
+goal5Data <- Marriage_UNSDG %>% 
+              changeToNumber(c("TimePeriod", "Value")) %>%
+              changeToFactor(c("GeoAreaCode", "GeoAreaName", "Sex", "SeriesDescription")) %>%
+              # Filter out data needed to calculate proportion of women married or in a union before age 15 and 18
+              subset(Indicator == "5.3.1") %>%
+              select(GeoAreaCode, GeoAreaName, TimePeriod, Sex, SeriesDescription, Early_marrige_rate = Value)
+```
+
+```{r mergeData, include = FALSE}
+# Join all married female data in a single data frame
+marriedFemales <- merge(goal4Data, goal5Data, 
+                        by = c("GeoAreaCode", "GeoAreaName", "TimePeriod", "Sex"))
+
+# Reformat early marriage rates into levels
+marriedFemales$"Early Marrige Rate" <- cut(marriedFemales$Early_marrige_rate,
+                                           breaks = c(0, 10, 30, Inf),
+                                           labels = c("Low (<10%)", "Moderate (10-30%)", "High (>30%)"),
+                                           right = FALSE)
+head(marriedFemales)
+
+```
+
+Sustainable Development Goal 5 (SDG 5) explicitly addresses gender equality and emphasizes the inequalities faced by women. For instance, target 5.3 identifies barriers that limit women's educational opportunities. These barriers can impact SDG 4, which aims to ensure inclusive and equitable quality education and promote lifelong learning opportunities for all. 
+
+```{r marriagePlot, out.width="80%"}
+# Produce plot of completion rates against early marriage rates
+ggplot(data = marriedFemales, aes(x = `Early Marrige Rate`, y = Completion_rate)) +
+        geom_boxplot(aes(fill = `Early Marrige Rate`)) +
+        facet_grid(. ~ SeriesDescription, 
+                   labeller = labeller(SeriesDescription = 
+                   c("Proportion of women aged 20-24 years who were married or in a union before age 15 (%)" = "Before age 15",
+                    "Proportion of women aged 20-24 years who were married or in a union before age 18 (%)" = "Before age 18"))) +
+
+        # Improve plot labels and theme
+        labs(title = "Impact of Early Marriage and Union on Female Education Completion Rates",
+             x = "Proportion of Early Marriages and Unions (%)",
+             y = "Female Education Completion Rates (%)",
+             subtitle = "Early Marriage Trends Among Women",
+             caption = "GDB indicators 4.1.2 and 5.3.1") +
+        theme(legend.position = "none",
+              plot.title = element_text(size = 15)) +
+        scale_fill_brewer(palette = "Pastel1")
+
+```
+
+Figure 4.2 illustrates the completion rates (indicator 4.1.2) for women who were married or in a union before the ages of 15 and 18 (indicator 5.3.1). In this analysis, the median serves as the comparison measure. The plot indicates that, as the rates of early marriage increase, the completion rate significantly decreases for both age groups. Although there is a wide range of completion rates for each age group, this trend suggests that women's educational attainment is negatively affected by their marital status, highlighting a factor that supports gender inequality in educational outcomes.
+
+Postponing marriage by a single year is associated with an increase of nearly 0.5 years in schooling attainment in Sub-Saharan Africa [@DELPRATO201542]. Similarly, in South-West Asia, the increase is approximately 0.33 years. Furthermore, delaying marriage has a positive impact on educational perseverance, reducing the likelihood of students dropping out of secondary school by approximately 5.5%. This suggests that later marriages can contribute to higher educational attainment and greater stability in academic pursuits.
+
+Upon closely examining the plot, it is evident that the early marriage rate for women married at age 15 or younger does not exceed 30%. Additionally, comparing the completion rates across different early marriage age ranges reveals that women married between the ages of 15 and 18 demonstrate a substantial improvement in their educational completion rates compared to those married at age 15 or younger. This improvement is evident in both the box range and median of completion rates for low and moderate early marriage rates, which increased from age 15 to age 18. It is important to note that data for women married at age 15 or younger are included in the data for those married at age 18 or younger.
+
+Furthermore, the figure presents data collected exclusively from females, focusing on factors affecting their education. Importantly, data on early-married men is not available, highlighting a gap in the analysis. To enhance our understanding, it would be beneficial to compare the available information on early-married women with other relevant data. This comparison could reveal significant insights and highlight any disparities between genders.
+
+### Recommendations
+
++ Provide support for young married women by ensuring access to nursery facilities, mentorship initiatives, a supportive community, and specialized supervision. 
+
++ Conduct further research on young married men and analyze the impact of marriage on their educational status, comparing this data with that of early married women.
+
+
+Addressing the challenges faced by young married women alongside poverty in lower-income countries is essential for promoting gender equality and educational outcomes. This approach can create a more equitable and inclusive educational environment.
