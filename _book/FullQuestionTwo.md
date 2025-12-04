@@ -12,7 +12,7 @@ Building on the regional inequalities identified in Question 1, this section exa
 
 }
 
-\caption{ }(\#fig:figure1)
+\caption{Sourced From SDG4 Global Database (Indicator 4.1.2)}(\#fig:figure1)
 \end{figure}
 
 Figure 2.1 presents global completion rates for primary, lower secondary and upper secondary education from 2010 to 2019. All three levels show steady improvement, with primary rising from about 72% to 80% and lower secondary from roughly 53% to 70%—the largest absolute gain. Upper secondary remains the lowest-performing stage but still increases from approximately 37% to 50%, reflecting progress at the most challenging transition point in the education pipeline.
@@ -29,7 +29,7 @@ However, global aggregation and the smoothing line obscure substantial country-l
 
 }
 
-\caption{ }(\#fig:figure2)
+\caption{Sourced From SDG4 Global Database (Indicator 4.c.1)}(\#fig:figure2)
 \end{figure}
 
 Figure 2.2 examines primary teacher qualification rates across continents between 2010 and 2019. Europe and Asia maintain the highest levels, typically above 90%, while Africa and the Americas show moderate but consistent gains. Oceania exhibits sharp fluctuations—including a decline after 2016—echoing the volatility observed in its completion rates. Across most continents, progress slows after 2016, mirroring the inflection points noted in Figure 1 and emphasising the close link between a stable, well-trained workforce and sustainable expansion in educational access.

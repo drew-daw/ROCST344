@@ -2,8 +2,6 @@
 
 
 
-Tackling gender and poverty inequalities is crucial for promoting equity and improving educational outcomes, leading to a more inclusive and fair society.
-
 ## Poverty in Relation to SDG 1
 
 
@@ -20,7 +18,7 @@ Tackling gender and poverty inequalities is crucial for promoting equity and imp
 
 }
 
-\caption{ }(\#fig:povertyPlot)
+\caption{Sourced From SDG4 Global Database (Indicators 1.1.1 and 4.1.2) based on a joint database of SDG1 and SDG4 databases}(\#fig:povertyPlot)
 \end{figure}
 
 Figure 4.1 illustrates the relationship between national poverty levels (SDG 1.1.1: proportion of population below the international poverty line) and school completion rates (SDG 4.1.2). The pattern is clear: higher poverty is strongly associated with lower educational completion.
@@ -65,16 +63,16 @@ Sustainable Development Goal 5 (SDG 5) explicitly addresses gender equality and 
 
 }
 
-\caption{ }(\#fig:marriagePlot)
+\caption{Sourced From SDG4 Global Database (Indicator 4.1.2 and 5.3.1) based on a joint database of SDG4 and SDG5 databases}(\#fig:marriagePlot)
 \end{figure}
 
-Figure 4.2 illustrates the completion rates (indicator 4.1.2) for women who were married or in a union before the ages of 15 and 18 (indicator 5.3.1). In this analysis, the median serves as the comparison measure. The plot indicates that, as the rates of early marriage increase, the completion rate significantly decreases for both age groups. Although there is a wide range of completion rates for each age group, this trend suggests that women's educational attainment is negatively affected by their marital status, highlighting a factor that supports gender inequality in educational outcomes.
+Figure 4.2 illustrates the relationship between educational completion rates (Indicator 4.1.2) and early marriage (Indicator 5.3.1). The data reveals a clear negative trend: as early marriage rates increase, educational completion significantly decreases for both age groups. While the range of completion rates varies, the median values confirm that early marriage acts as a barrier to educational attainment, reinforcing gender inequality in outcomes.
 
-Postponing marriage by a single year is associated with an increase of nearly 0.5 years in schooling attainment in Sub-Saharan Africa [@DELPRATO201542]. Similarly, in South-West Asia, the increase is approximately 0.33 years. Furthermore, delaying marriage has a positive impact on educational perseverance, reducing the likelihood of students dropping out of secondary school by approximately 5.5%. This suggests that later marriages can contribute to higher educational attainment and greater stability in academic pursuits.
+This visual trend is supported by literature. Postponing marriage by a single year is associated with an increase in schooling attainment of nearly 0.5 years in Sub-Saharan Africa and approximately 0.33 years in South-West Asia [@DELPRATO201542]. Furthermore, delaying marriage improves educational perseverance, reducing the likelihood of secondary school drop-out by approximately 5.5%. This confirms that later marriage contributes to both higher attainment and greater academic stability.
 
-Upon closely examining the plot, it is evident that the early marriage rate for women married at age 15 or younger does not exceed 30%. Additionally, comparing the completion rates across different early marriage age ranges reveals that women married between the ages of 15 and 18 demonstrate a substantial improvement in their educational completion rates compared to those married at age 15 or younger. This improvement is evident in both the box range and median of completion rates for low and moderate early marriage rates, which increased from age 15 to age 18. It is important to note that data for women married at age 15 or younger are included in the data for those married at age 18 or younger.
+In terms of specific age demographics, the rate of marriage for those under 15 does not exceed 30%. Comparing the two groups reveals that women married between ages 15 and 18 demonstrate substantially better completion rates—evident in both the median and box range—than those married by age 15. (Note that the under-18 dataset cumulatively includes those married by age 15).
 
-Furthermore, the figure presents data collected exclusively from females, focusing on factors affecting their education. Importantly, data on early-married men is not available, highlighting a gap in the analysis. To enhance our understanding, it would be beneficial to compare the available information on early-married women with other relevant data. This comparison could reveal significant insights and highlight any disparities between genders.
+Finally, a key limitation of this plot is its exclusive focus on female data. The absence of equivalent information on early-married men prevents a comparative analysis, leaving a gap in our understanding of how early marriage differentially affects educational attainment across genders.
 
 ### Recommendations
 

@@ -16,7 +16,7 @@ Building on the regional inequalities identified in Question 1, this section exa
 
 ## Completion Rates per Education Levels
 
-```{r figure1}
+```{r figure1, fig.cap = "Sourced From SDG4 Global Database (Indicator 4.1.2)"}
 Q2Data <- Data %>%
   filter(Indicator %in% c("4.1.2", "4.c.1"))
 CompRate <- Data %>%
@@ -53,8 +53,7 @@ A1 <- edu_ts %>%
        subtitle = "All levels improve, but upper secondary remains the\nkey bottleneck for educational progression",
        x = "Year",
        y = "Completion Rate (%)",
-       colour = "Education Level",
-       caption = "Source: SDG4 Global Database (Indicator 4.1.2)") +
+       colour = "Education Level") +
   scale_x_continuous(breaks = seq(2010, 2019, by = 2)) +
   scale_colour_brewer(palette = "Dark2") +
   annotate("rect", xmin = 2017, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = 0.1, fill = "blue") +
@@ -70,7 +69,7 @@ However, global aggregation and the smoothing line obscure substantial country-l
 
 ##  Qualified Primary School Teachers over Continents
 
-```{r figure2}
+```{r figure2, fig.cap = "Sourced From SDG4 Global Database (Indicator 4.c.1)"}
 region_ts <- Q2Data %>%
   group_by(Indicator, Continent, TimePeriod, `Education level`) %>%
   summarise(mean_value = mean(Value, na.rm = TRUE)) %>%
@@ -92,8 +91,7 @@ B3 <- region_ts %>%
   labs(title = "Primary School Teacher Qualifications\nby Continents (2010–2019)",
        subtitle = "High-performing regions are stable, but others\nshow volatility and slowing progress after 2016",
        x = "Year",
-       y = "Qualified Teachers (%)",
-       caption = "Source: SDG4 Global Database (Indicator 4.c.1)") +
+       y = "Qualified Teachers (%)") +
   scale_x_continuous(breaks = seq(2010, 2019, by = 2)) +
   scale_colour_brewer(palette = "Dark2") +
   annotate("rect", xmin = 2016, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = 0.1, fill = "blue") +

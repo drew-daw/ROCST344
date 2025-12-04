@@ -10,7 +10,6 @@ rmd_files: [
   "abstract.Rmd",
   "intro.Rmd",
   "method.Rmd",
-  "DrewData.Rmd",
   "FullQuestionOne.Rmd",
   "FullQuestionTwo.Rmd",
   "FullQuestionThree.Rmd",

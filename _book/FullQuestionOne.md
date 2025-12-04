@@ -1,4 +1,4 @@
-# Spaical analysis
+# Spatial Analysis
 
 
 
@@ -10,13 +10,13 @@
 
 }
 
-\caption{ }(\#fig:lookGeneral)
+\caption{Sourced From SDG4 Global Database (Indicator 4.1.1)}(\#fig:lookGeneral)
 \end{figure}
 <!-- results of the plot -->
 
 Within Figure 1.1, the highlighted box plots show each Sub Region's mean being less than the mean for the overall Education Level -- for clarity the red crosses are the means for each Sub Region, whilst the black points are the outliers. 
 
-Within the Primary section, outlier are shown in Latin America and the Caribbean, Northern Africa, and Sub-Saharan Africa. This aligns well with Lowest Preforming Countries talked later in the report. Additionally, South-east Asia shows an incredible spread of data, with the IQR being 61.23. 
+Within the Primary section, outlier are shown in Latin America and the Caribbean, Northern Africa, and Sub-Saharan Africa. This aligns with the findings discussed later in Section 1.2. Additionally, South-east Asia shows an incredible spread of data, with the IQR being 61.23. 
 
 Within the Lower Secondary section, only one Sub-Region displays an outlier, being Northern Africa. Interestingly, this outlier is still below the mean for lower secondary schools, displaying that Northern Africa is an area of concern. Additionally, South-east Asia is the only Sub-Region where the mean falls below the grand mean, but the third quartile is higher. This shows much more spread across the Sub-Region. 
 
@@ -28,10 +28,7 @@ South-east Asia also demonstrates the most spread across the sub-regions. Contex
 
 \newpage
 
-## Lowest Preforming Countries
-
-This analysis examines global variation in educational access using several SDG 4 indicators, with a primary focus on Indicator 4.1.2 (completion rate across primary, lower secondary, and upper secondary levels). By extracting the most recent available data for each country, we identify those lagging furthest behind and assess how completion rates differ across continents. The findings highlight persistent regional inequalities and reveal where progress has been slow or stagnant.
-
+## Lowest Performing Countries
 
 
 
@@ -75,9 +72,6 @@ This strongly suggests that educational access continues to be highly constraine
 
 A notable methodological limitation arises from the fact that countries have uneven reporting years. For example, Qatar’s most recent observation is from 2012, whereas others have data from 2018–2019. As a result, some “low-performing” countries may have improved since their last measurement. This highlights a broader challenge in using SDG datasets for cross-country comparisons: data recency varies significantly.
 
-
-Now, looking at each continents development from their earliest datapoint to their most recent:
-
 \newpage
 
 ## Continental trends in school completion
@@ -88,7 +82,7 @@ Now, looking at each continents development from their earliest datapoint to the
 
 }
 
-\caption{ }(\#fig:trends)
+\caption{Sourced From SDG4 Global Database (Indicator 4.1,2)}(\#fig:trends)
 \end{figure}
 
 To reduce noise arising from irregular reporting and to understand broader patterns, we computed average completion rates over time for each continent. The resulting plot (Figure 1.2) reveals several key insights:
@@ -108,4 +102,4 @@ The analysis of Indicator 4.1.1 highlights Sub-Saharan Africa as the region most
 
 Oceania's apparent decline should be interpreted cautiously. Thus, separating SIDS from larger countries -- e.g. Australia and New Zealand -- in stage-two analysis to avoid misleading regional averages. 
 
-For the next analytical phase, more robust continental and sub-regional comparisons should include population-weighted averages and temporal smoothing. This would offer clearer insight into where investments would have the greatest impact. 
+For the next analytical phase, more robust continental and sub-regional comparisons should include population-weighted averages and temporal smoothing. This would offer clearer insight into where investments would have the greatest impact.
